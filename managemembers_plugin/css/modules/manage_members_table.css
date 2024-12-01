@@ -1,0 +1,38 @@
+.manage-members-container{
+    height: 100%;
+    position: relative;
+    width: 100%;
+}
+
+.add-member-wrapper{
+    display: flex;
+    justify-content: start;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    
+}
+
+.manage-members-table{
+    border-radius: 10px;
+    border: 1px solid black;
+    margin-left: auto;
+    margin-right: auto;
+    width:95%;
+}
+.manage-members-table thead tr th{
+    font-weight: bold;
+}
+
+.manage-members-table thead tr th,
+.manage-members-table tbody tr td {
+    background-color: gainsboro;
+    padding: 10px;
+}
+
+.manage-members-table .manage-members-actions{
+  display: flex;
+  justify-content: space-evenly;
+}

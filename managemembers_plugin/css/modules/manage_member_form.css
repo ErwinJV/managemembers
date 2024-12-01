@@ -1,0 +1,52 @@
+
+.manage-member-modal{
+    align-items: center;
+    background-color: black;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    opacity: 70%;
+    position:absolute;
+    top: 0;
+    width: 100%;
+    z-index: 500;
+}
+
+.box-form{
+    align-items: center;
+    background-color: aliceblue;
+    border-radius: 10px;
+    display: flex;
+    display: flex;
+    flex-direction: column;
+    flex-direction: column;
+    height: 600px;
+    justify-content: center;
+    padding: 10px;
+    width: 500px;
+}
+
+.box-form .input-group{
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+   
+}
+
+.box-form .input-group label{
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.box-form .input-group input,.box-form .input-group select{
+    height: 40px;
+}
+
+.box-form button{
+    padding: 5px;
+    font-size: 16px;
+    font-weight: bold;
+}
