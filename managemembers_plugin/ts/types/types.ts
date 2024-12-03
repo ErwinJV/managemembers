@@ -7,4 +7,5 @@ export type ManageMember = {
   openUpdateModal: boolean;
   toggleAddModal:(this:AlpineComponent<ManageMember>)=>void
   toggleUpdateModal: (this: AlpineComponent<ManageMember>,name:string) => void;
+  addNewMember:()=>void
 };

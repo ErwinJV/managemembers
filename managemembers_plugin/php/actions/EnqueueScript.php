@@ -21,7 +21,14 @@ class EnqueueScript implements Action {
          foreach($this->scripts as $script)
          {
             extract($script,EXTR_OVERWRITE);
+            
             wp_enqueue_script($name,$path_uri,$deps,$version,$args);
+            if($this->type === 'admin'){
+                wp_localize_script($name,'wpApiAuth',[
+                    'root'=>esc_url_raw(rest_url()),
+                    'nonce'=>wp_create_nonce('wp_auth_api'),
+                ]);
+            }
          }
      }
 

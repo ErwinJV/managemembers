@@ -1,18 +1,31 @@
-import Alpine, { AlpineComponent } from "alpinejs"
+import Alpine, { AlpineComponent } from "alpinejs";
 
-import {ManageMember} from './types'
-import {deleteMember,fillUpdateModalInputs,toggleAddModal,toggleUpdateModal} from './helpers'
+import { ManageMember } from "./types";
+import {
+  deleteMember,
+  fillUpdateModalInputs,
+  toggleAddModal,
+  toggleUpdateModal,
+  addNewMember,
+} from "./helpers";
 
 //@ts-ignore
-window.Alpine = Alpine
+window.Alpine = Alpine;
 
-Alpine.data('manageMembers',():AlpineComponent<ManageMember>=>({
+Alpine.data(
+  "manageMembers",
+  (): AlpineComponent<ManageMember> => ({
     deleteMember,
     fillUpdateModalInputs,
-    openAddModal:false,
-    openUpdateModal:false,
+    openAddModal: false,
+    openUpdateModal: false,
     toggleAddModal,
     toggleUpdateModal,
-}))
+    addNewMember,
+  })
+);
 
-Alpine.start()
+Alpine.start();
+
+//@ts-ignore
+console.log("Nonce: ", wpApiAuth.nonce);

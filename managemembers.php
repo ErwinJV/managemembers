@@ -10,6 +10,9 @@ use managemembers_plugin\php\actions\EnqueueStyle;
 
 require __DIR__ . '/managemembers_plugin/php/Plugin.php';
 require __DIR__ . '/managemembers_plugin/php/menus/manage_members.php';
+require __DIR__ . '/managemembers_plugin/php/api/register_members.php';
+require __DIR__ . '/managemembers_plugin/php/api/get_members.php';
+
 
 
 spl_autoload_register(function (string $className) {
