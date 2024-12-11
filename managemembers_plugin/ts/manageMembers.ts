@@ -7,6 +7,12 @@ import {
   toggleAddModal,
   toggleUpdateModal,
   addNewMember,
+  updateMember,
+  getMembers,
+  renderPagination,
+  nextPage,
+  previousPage,
+  goToPage,
 } from "./helpers";
 
 //@ts-ignore
@@ -15,17 +21,29 @@ window.Alpine = Alpine;
 Alpine.data(
   "manageMembers",
   (): AlpineComponent<ManageMember> => ({
+    addNewMember,
+    currentPage:0,
     deleteMember,
     fillUpdateModalInputs,
+    limit:10,
+    offset:0,
     openAddModal: false,
     openUpdateModal: false,
+    pages:1,
+    showPages:[],
     toggleAddModal,
     toggleUpdateModal,
-    addNewMember,
-  })
+    updateMember,
+    getMembers,
+    renderPagination,
+    nextPage,
+    previousPage,
+    goToPage
+    })
 );
 
 Alpine.start();
 
-//@ts-ignore
-console.log("Nonce: ", wpApiAuth.nonce);
+
+
+

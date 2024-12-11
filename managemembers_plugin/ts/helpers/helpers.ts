@@ -1,6 +1,8 @@
 import { AlpineComponent } from "alpinejs";
 
-import { ManageMember } from "../types";
+import { ManageMember, Members } from "../types";
+
+const DOMAIN = window.location.origin;
 
 export const deleteMember = (url: string) => {
   window.location.href = url;
@@ -18,36 +20,88 @@ export function toggleAddModal(this: AlpineComponent<ManageMember>) {
   console.log(this.openAddModal);
 }
 
-export const fillUpdateModalInputs = (name: string) => {
-  const nameInput = document.getElementById("name") as HTMLInputElement;
+export const fillUpdateModalInputs = (
+  suffix: string,
+  id:string,
+  name: string,
+  lastName: string,
+  email: string,
+  _document: string,
+  memberStatus: string
+) => {
+  const sendButton = document.getElementById('sendButton') as HTMLDivElement
+
+  const nameInput = document.getElementById(
+    `name${suffix}`
+  ) as HTMLInputElement;
+  const lastNameInput = document.getElementById(
+    `lastName${suffix}`
+  ) as HTMLInputElement;
+  const emailInput = document.getElementById(
+    `email${suffix}`
+  ) as HTMLInputElement;
+  const documentInput = document.getElementById(
+    `document${suffix}`
+  ) as HTMLInputElement;
+  const memberStatusInput = document.getElementById(
+    `memberStatus${suffix}`
+  ) as HTMLInputElement;
   nameInput.value = name;
+  lastNameInput.value = lastName;
+  emailInput.value = email;
+  documentInput.value = _document;
+  memberStatusInput.value = memberStatus;
+  sendButton.innerHTML = `<button type="submit" @click="updateMember('${id}')"  >Send</button>`
 };
 
-export const addNewMember = async() => {
-  const name = (document.getElementById("name_add") as HTMLInputElement).value;
-  const lastName = (document.getElementById("lastName_add") as HTMLInputElement)
+const getInputsValues = (suffix: string) => {
+  const name = (document.getElementById(`name${suffix}`) as HTMLInputElement)
     .value;
-  const email = (document.getElementById("email_add") as HTMLInputElement)
+  const lastName = (
+    document.getElementById(`lastName${suffix}`) as HTMLInputElement
+  ).value;
+  const email = (document.getElementById(`email${suffix}`) as HTMLInputElement)
     .value;
   const _document = (
-    document.getElementById("document_add") as HTMLInputElement
+    document.getElementById(`document${suffix}`) as HTMLInputElement
   ).value;
   const memberStatus = (
-    document.getElementById("memberStatus_add") as HTMLSelectElement
+    document.getElementById(`memberStatus${suffix}`) as HTMLSelectElement
   ).value;
 
-  const domain = window.location.origin;
-  
-   //@ts-ignore
-  
+  return {
+    _document,
+    email,
+    lastName,
+    memberStatus,
+    name,
+  };
+};
 
-  if (
-    name &&
-    lastName &&
-    email &&
-    _document &&
-    memberStatus
-  ) {
+const validateValues = (values: Record<string, string>) => {
+  const _values = Object.values(values);
+  let emptyInputs = 0;
+  _values.forEach((_value) => {
+    if (_value === undefined || _value === null) {
+      emptyInputs += 1;
+    }
+  });
+
+  if (emptyInputs) {
+    return false;
+  }
+
+  return true;
+};
+
+export async function addNewMember  (this:AlpineComponent<ManageMember>) {
+  const { _document, email, lastName, memberStatus, name } =
+    getInputsValues("_add");
+
+  console.log(window.location.href);
+  if (!validateValues({ name, _document, email, lastName, memberStatus })) {
+    return
+  }
     const newMember = {
       name,
       lastName,
@@ -56,22 +110,159 @@ export const addNewMember = async() => {
       memberStatus,
     };
 
-    const response = await fetch(`${domain}/wp-json/members/v1/add`, {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            //@ts-ignore
-            'Nonce': wpApiAuth.nonce
-          },
-        body:JSON.stringify(newMember),
-        method:'POST', 
-         
-    })
-
-    const json = await response.json()
-    console.log(json)
-  }else{
-    //@ts-ignore
-     console.log(wpApiAuth.nonce)
-  }
+    await fetch(`${DOMAIN}/wp-json/members/v1/add`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newMember),
+      method: "POST",
+    }).then(async()=>{
+      await this.getMembers()
+      this.toggleAddModal()
+    })  
 };
+
+export async  function updateMember  (this:AlpineComponent<ManageMember>,id: string) {
+  const { _document, email, lastName, memberStatus, name } =
+    getInputsValues("_update");
+
+  const inputsIsValid = validateValues({
+    name,
+    _document,
+    email,
+    lastName,
+    memberStatus,
+  });
+  if (!inputsIsValid) {
+    return
+  }
+    const data = {
+      id,
+      name,
+      lastName,
+      email,
+      document: _document,
+      memberStatus,
+    };
+    console.log(data)
+    await fetch(`${DOMAIN}/wp-json/members/v1/update`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+      method: "POST",
+    }).then(async()=>{
+      await this.getMembers()
+      this.toggleUpdateModal()
+    })
+  
+    
+};
+
+export async function getMembers(this:AlpineComponent<ManageMember>) {
+  console.log('offset: ',this.offset)
+ 
+  const response = await fetch(
+    `${DOMAIN}/wp-json/members/v1/all?limit=${this.limit}?offset=${this.offset}`
+  );
+  const data = await response.json();
+  let rows = "";
+  //console.log(data)
+
+  const { members, pages } = JSON.parse(data) as unknown as Members;
+  console.log(members.length)
+     
+  this.pages = pages
+ 
+  members.forEach((member) => {
+    rows += ` <tr>
+                <td>${member.name}</td>
+                <td>${member.last_name}</td>
+                <td>${member.email}</td>
+                <td>${member.document}</td>
+                <td>${member.member_status}</td>
+                <td>${member.created}</td>
+                <td class="manage-members-actions">
+                 <button @click="toggleUpdateModal(),fillUpdateModalInputs('_update','${member.id}','${member.name}','${member.last_name}','${member.email}','${member.document}','${member.member_status}')">
+                   Update
+                </button>
+                 <button>Delete</button>
+                </td>
+            </tr>`;
+  });
+
+  const tbody = document.getElementById("manageMembersTBody");
+
+  if (tbody) {
+    tbody.innerHTML = rows;
+  }
+}
+
+export function nextPage(this: AlpineComponent<ManageMember>) {
+  if (this.showPages[this.showPages.length - 1] !== this.pages) {
+    this.showPages = this.showPages.map((value) => value + 1);
+  }
+
+  if (this.currentPage === this.pages) {
+    return;
+  }
+  this.currentPage += 1;
+  this.offset = this.currentPage * 10;
+
+  this.getMembers();
+}
+
+export function previousPage(this: AlpineComponent<ManageMember>) {
+  if (this.showPages[0] !== 1) {
+    this.showPages = this.showPages.map((value) => value - 1);
+  }
+
+  if (this.currentPage === 1) {
+    return;
+  }
+  this.currentPage -= 1;
+  this.offset = this.currentPage * 10;
+
+  this.getMembers();
+}
+
+export function goToPage(this:AlpineComponent<ManageMember>,page:string){
+    this.currentPage = parseInt(page) - 1
+    
+    if(this.currentPage === 0){
+        this.offset = 0
+    }else{
+      this.currentPage = parseInt(page) -1
+      this.offset = this.currentPage -1 * 10
+    }
+   
+
+    this.getMembers()
+}
+
+export function renderPagination(this:AlpineComponent<ManageMember>) {
+     const manageMembersPagination = document.getElementById('manageMembersPagination') as HTMLDivElement
+
+     if(this.pages <= 5){
+       new Array(this.pages).fill(0).forEach((_,i)=>{
+           this.showPages[i] = i+1
+       })
+     }else{
+      new Array(5).fill(0).forEach((_,i)=>{
+        this.showPages[i] = i+1
+    })
+     }
+
+     let paginate = `<div @click="previousPage()">Previous </div>`
+
+     this.showPages.forEach((page)=>{
+      paginate += `<div @click="goToPage('${page}')">${page}</div>`
+     })
+
+     paginate += `<div @click="nextPage()"> Next </div>` 
+
+     manageMembersPagination.innerHTML = paginate
+
+}

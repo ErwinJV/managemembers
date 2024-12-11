@@ -1,51 +1,101 @@
 <?php
 
+
+
 function update_member(WP_REST_Request $request)
-{
-    global $wpdb;
-    
-    
-    require __DIR__ . 'validate_request.php';
+{    
+
+    $origin = get_origin($request);
+
+    if(!validate_origin($origin)){
+        return new WP_REST_Response(json_encode(['msg'=>'Forbbiden']),403);
+    }
+
+    if(!is_headers($request)){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Headers not defined']),400);
+    }
+
+    $cookie = get_cookie($request);
+
+    if(!$cookie){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Cookies not defined','cookie'=>get_cookie($request)]),400);
+    }
+
+    $token = get_token($cookie);
 
 
-    try
-    {
+
+    if(!$token){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Token not defined','token'=>$token]),400);
+    }
+
+    $decode_token = decode_token($token);
+
+    if(isset($decode_token['error'])){
+        return new WP_REST_Response(json_encode($decode_token),400);  
+    }
+    
+        global $wpdb;
+    
         $params = $request->get_json_params();
-    
+
         $id = intval($params['id']);
         $name = sanitize_text_field($params['name']);
         $last_name = sanitize_text_field($params['lastName']);
         $email = sanitize_email($params['email']);
         $document = intval($params['document']);
-        $member_status = sanitize_text_field($params['member_status']);
-    
-        $query = "UPDATE {$wpdb->prefix}members SET `name` = %s,`last_name` = %s, `email` = %s,
-                                                    `document` = %d, `member_status`= %s 
-                                                    WHERE `id` = %d;";
+        $member_status = sanitize_text_field($params['memberStatus']);
 
-        $response = $wpdb->query($wpdb->prepare($query, [
-            $name,
-            $last_name,
-            $email,
-            $document,
-            $member_status,
-            $id
-        ]));
+        $table = $wpdb->prefix . 'members';
 
+        $response = false;
+        $error = "";
+        try{
+           
+            $response = $wpdb->update($table, [
+                'name'=>$name,
+                'last_name'=>$last_name,
+                'email'=>$email,
+                'document'=>$document,
+                'member_status'=>$member_status,  
+            ],
+            [
+                'id'=>$id,
+            ],
+            [
+               '%s',
+               '%s',
+               '%s',
+               '%d',
+               '%s'
+            ],
+            [
+            '%d'
+            ]
+        );
 
-        return $response ? new WP_REST_Response('Success!', 200)
-                         : new WP_REST_Response('Something went wrong', 404);
+        }catch(Exception $e){
+           $error = $e->getMessage();
+        }
+ 
+       
+        if($error){
+           return new WP_REST_Response(json_encode(['error'=>$error]), 500);
+        }
 
-    } catch (Exception $e) {
-         
-        return new WP_REST_Response('Something went wrong', 500);
-    }
+        if(gettype($response) !=='integer'){
+          return  new WP_REST_Response(json_encode(['databaseResponse'=>$response,'params'=>$params]), 404);
+        }
+
+        return  new WP_REST_Response(['msg'=>'Success','params'=>$params], 200);
+                        
+
 
 }
 
 function update_member_rest_route()
 {
-    register_rest_route('members/v1','update_member',[
+    register_rest_route('members/v1','update',[
         'methods'=> 'POST',
         'callback'=>'update_member',
         'permission_callback'=>'__return_true'

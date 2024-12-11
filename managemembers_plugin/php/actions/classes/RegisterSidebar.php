@@ -1,6 +1,6 @@
 <?php 
 
-namespace managemembers_plugin\php\actions;
+namespace managemembers_plugin\php\actions\classes;
 
 use managemembers_plugin\php\interfaces\Action;
 

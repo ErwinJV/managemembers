@@ -4,24 +4,30 @@
  * Description: Let visitors to register them in the website for business purposes
  * Version: 1.0
  */
-use managemembers_plugin\php\actions\EnqueueScript;
-use managemembers_plugin\php\actions\EnqueueStyle;
 
-
-require __DIR__ . '/managemembers_plugin/php/Plugin.php';
-require __DIR__ . '/managemembers_plugin/php/menus/manage_members.php';
-require __DIR__ . '/managemembers_plugin/php/api/register_members.php';
-require __DIR__ . '/managemembers_plugin/php/api/get_members.php';
-
-
-
-spl_autoload_register(function (string $className) {
+ spl_autoload_register(function (string $className) {
    $path = str_replace('\\', '/', $className);
    $classPath = __DIR__ . "/$path" . ".php";
    if (file_exists($classPath)) {
        require $classPath;
    }
 });
+
+
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/managemembers_plugin/php/helpers/utils_api_requests.php';
+require __DIR__ . '/managemembers_plugin/php/Plugin.php';
+require __DIR__ . '/managemembers_plugin/php/api/update_member.php';
+require __DIR__ . '/managemembers_plugin/php/menus/manage_members.php';
+require __DIR__ . '/managemembers_plugin/php/api/register_members.php';
+require __DIR__ . '/managemembers_plugin/php/api/get_members.php';
+require __DIR__ . '/managemembers_plugin/php/actions/functions/login_action.php';
+
+use managemembers_plugin\php\actions\classes\EnqueueScript;
+use managemembers_plugin\php\actions\classes\EnqueueStyle;
+
+
+
 
 
 // Enqueue JS scripts
@@ -42,7 +48,7 @@ $enqueue_admin_scripts = new EnqueueScript('admin',[
    'path_uri'=>plugins_url('dist/manageMember.bundle.js',__FILE__),
    'deps'=>[],
    'version'=>'1.0',
-   'args'=>['strategy'=>'defer']
+   'args'=>[]
   ]
 ]);
 $enqueue_admin_scripts->run();
