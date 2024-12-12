@@ -162,17 +162,17 @@ export async  function updateMember  (this:AlpineComponent<ManageMember>,id: str
 };
 
 export async function getMembers(this:AlpineComponent<ManageMember>) {
-  console.log('offset: ',this.offset)
+  console.log('offset: ',this.offset, 'limit: ',this.limit,'currentPage: ',this.currentPage,'pages: ',this.pages)
  
   const response = await fetch(
-    `${DOMAIN}/wp-json/members/v1/all?limit=${this.limit}?offset=${this.offset}`
+    `${DOMAIN}/wp-json/members/v1/all?limit=${this.limit}&offset=${this.offset}`
   );
   const data = await response.json();
   let rows = "";
   //console.log(data)
 
   const { members, pages } = JSON.parse(data) as unknown as Members;
-  console.log(members.length)
+  console.log(members)
      
   this.pages = pages
  
@@ -201,6 +201,10 @@ export async function getMembers(this:AlpineComponent<ManageMember>) {
 }
 
 export function nextPage(this: AlpineComponent<ManageMember>) {
+
+  if(this.currentPage === this.pages -1){
+    return
+  }
   if (this.showPages[this.showPages.length - 1] !== this.pages) {
     this.showPages = this.showPages.map((value) => value + 1);
   }
@@ -209,37 +213,42 @@ export function nextPage(this: AlpineComponent<ManageMember>) {
     return;
   }
   this.currentPage += 1;
-  this.offset = this.currentPage * 10;
+  this.offset +=10;
 
   this.getMembers();
 }
 
 export function previousPage(this: AlpineComponent<ManageMember>) {
+  if(this.currentPage === 0){
+     return
+  }
   if (this.showPages[0] !== 1) {
     this.showPages = this.showPages.map((value) => value - 1);
   }
-
-  if (this.currentPage === 1) {
-    return;
+  if(this.currentPage> 0){
+    this.currentPage -= 1;
   }
-  this.currentPage -= 1;
-  this.offset = this.currentPage * 10;
+  if(this.offset !== 0){
+    this.offset -=10
+  }
+ 
+
 
   this.getMembers();
 }
 
 export function goToPage(this:AlpineComponent<ManageMember>,page:string){
-    this.currentPage = parseInt(page) - 1
-    
-    if(this.currentPage === 0){
-        this.offset = 0
-    }else{
+      if(this.currentPage === parseInt(page) -1){
+        return
+      }
       this.currentPage = parseInt(page) -1
-      this.offset = this.currentPage -1 * 10
-    }
-   
-
-    this.getMembers()
+      if(this.currentPage === 0){
+         this.offset = 0
+      }else{
+       this.offset = this.currentPage * 10
+      }
+  
+      this.getMembers()
 }
 
 export function renderPagination(this:AlpineComponent<ManageMember>) {
@@ -255,13 +264,13 @@ export function renderPagination(this:AlpineComponent<ManageMember>) {
     })
      }
 
-     let paginate = `<div @click="previousPage()">Previous </div>`
+     let paginate = `<span @click="previousPage" class="dashicons dashicons-arrow-left-alt2"></span>`
 
      this.showPages.forEach((page)=>{
-      paginate += `<div @click="goToPage('${page}')">${page}</div>`
+      paginate += `<span class="${page -1 === this.currentPage ? 'current-page' : '' }" @click="goToPage('${page}')">${page}</span>`
      })
 
-     paginate += `<div @click="nextPage()"> Next </div>` 
+     paginate += `<span @click="nextPage()" class="dashicons dashicons-arrow-right-alt2"></span>` 
 
      manageMembersPagination.innerHTML = paginate
 

@@ -28,7 +28,7 @@ function get_members(WP_REST_Request $request)
 
     }
     
-    return new WP_REST_Response(json_encode(['pages'=>$pages,'members'=>$members]),200);
+    return new WP_REST_Response(json_encode(['pages'=>$pages,'members'=>$members,'offset'=>$_GET['offset']],),200);
  
   
 }

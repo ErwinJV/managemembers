@@ -3,7 +3,7 @@
 function manage_members_template()
 {
 
-    ?>
+?>
 
 <div class="manage-members-container" x-data="manageMembers" x-effect="getMembers()">
    <h1>Manage Members</h1>
@@ -12,7 +12,8 @@ function manage_members_template()
   Add Member<span class="dashicons dashicons-plus"></span>
   </div>
 
-    <table class="manage-members-table" >
+   <div class="table-paginate-wrapper">
+   <table class="manage-members-table" >
         <thead>
            <tr>
             <th>Name</th>
@@ -30,8 +31,8 @@ function manage_members_template()
     </table>
 
     <div id="manageMembersPagination" x-effect="renderPagination" >
-     
-     </div>
+    </div>
+   </div>
 
 <!--  UPDATE FORM MODAL -->
     <div class="manage-member-modal" x-show="openUpdateModal" >
@@ -106,15 +107,10 @@ function manage_members_template()
            </select>
         </div>
 
-        <button type="submit" @click ="addNewMember">Send</button>
+        <button type="submit" @click ="addNewMember()">Send</button>
     </form>
    </div>
-
    </div>
-
-
-
-
 
 <?php
 

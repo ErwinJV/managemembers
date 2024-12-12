@@ -6,7 +6,7 @@
      padding: 10px;
 }
 
-#manageMembersPagination div{
+#manageMembersPagination span{
     padding: 8px;
     background-color: darkblue;
     color:white;
@@ -14,7 +14,13 @@
     cursor: pointer;
 }
 
-#manageMembersPagination div:last-child{
+#manageMembersPagination span:last-child{
     
     margin-left: none;
+}
+
+#manageMembersPagination .current-page{
+    background-color: white;
+    outline: 1px darkblue;
+    color:darkblue;
 }
