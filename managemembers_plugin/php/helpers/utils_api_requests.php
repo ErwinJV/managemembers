@@ -65,13 +65,3 @@ function decode_token(string $token)
 
 }
 
-function get_origin(WP_REST_Request $request)
-{
-    $origin = $request->get_header('origin');
-    return $origin;
-}
-
-function validate_origin(string $origin)
-{
-    return $origin === site_url();
-}

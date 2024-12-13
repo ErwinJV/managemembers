@@ -20,6 +20,24 @@ export function toggleAddModal(this: AlpineComponent<ManageMember>) {
   console.log(this.openAddModal);
 }
 
+const resetInputs = (suffix:string)=>{
+  const nameInput = (document.getElementById(
+    `name${suffix}`
+  ) as HTMLInputElement).value = "";
+  const lastNameInput = (document.getElementById(
+    `lastName${suffix}`
+  ) as HTMLInputElement).value = "";
+  const emailInput = (document.getElementById(
+    `email${suffix}`
+  ) as HTMLInputElement).value = "";
+  const documentInput = (document.getElementById(
+    `document${suffix}`
+  ) as HTMLInputElement).value = "";
+  const memberStatusInput = (document.getElementById(
+    `memberStatus${suffix}`
+  ) as HTMLInputElement).value = "";
+}
+
 export const fillUpdateModalInputs = (
   suffix: string,
   id:string,
@@ -119,6 +137,7 @@ export async function addNewMember  (this:AlpineComponent<ManageMember>) {
       method: "POST",
     }).then(async()=>{
       await this.getMembers()
+       resetInputs('_add')
       this.toggleAddModal()
     })  
 };
@@ -145,7 +164,7 @@ export async  function updateMember  (this:AlpineComponent<ManageMember>,id: str
       document: _document,
       memberStatus,
     };
-    console.log(data)
+   // console.log(data)
     await fetch(`${DOMAIN}/wp-json/members/v1/update`, {
       headers: {
         Accept: "application/json",
@@ -155,10 +174,10 @@ export async  function updateMember  (this:AlpineComponent<ManageMember>,id: str
       method: "POST",
     }).then(async()=>{
       await this.getMembers()
+      resetInputs('_update')
       this.toggleUpdateModal()
     })
   
-    
 };
 
 export async function getMembers(this:AlpineComponent<ManageMember>) {
@@ -169,11 +188,11 @@ export async function getMembers(this:AlpineComponent<ManageMember>) {
   );
   const data = await response.json();
   let rows = "";
-  //console.log(data)
+  console.log(data)
 
   const { members, pages } = JSON.parse(data) as unknown as Members;
-  console.log(members)
-     
+ 
+  //console.log(data)
   this.pages = pages
  
   members.forEach((member) => {

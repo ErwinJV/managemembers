@@ -7,12 +7,6 @@ function add_member(WP_REST_Request $request)
         return new WP_REST_Response(json_encode(['error' => 'Bad Request - Undefined headers']), 400);
     }
 
-    $origin = get_origin($request);
-
-    if (!validate_origin($origin)) {
-        return new WP_REST_Response(json_encode(['msg' => 'Forbidden']), 403);
-    }
-
     global $wpdb;
 
     $params = $request->get_json_params();

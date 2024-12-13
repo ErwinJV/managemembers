@@ -5,12 +5,7 @@
 function update_member(WP_REST_Request $request)
 {    
 
-    $origin = get_origin($request);
-
-    if(!validate_origin($origin)){
-        return new WP_REST_Response(json_encode(['msg'=>'Forbbiden']),403);
-    }
-
+   
     if(!is_headers($request)){
         return new WP_REST_Response(json_encode(['error'=>'Bad Request - Headers not defined']),400);
     }
@@ -23,8 +18,6 @@ function update_member(WP_REST_Request $request)
 
     $token = get_token($cookie);
 
-
-
     if(!$token){
         return new WP_REST_Response(json_encode(['error'=>'Bad Request - Token not defined','token'=>$token]),400);
     }
@@ -33,6 +26,30 @@ function update_member(WP_REST_Request $request)
 
     if(isset($decode_token['error'])){
         return new WP_REST_Response(json_encode($decode_token),400);  
+    }
+    $error = "";
+    $capabilities = [];
+    
+    try{
+     
+     $capabilities = $decode_token['data']['capabilities'];
+  
+    }catch(Exception $e){
+       $error = $e->getMessage();
+    }
+
+    $authorized = false;
+     
+    if(isset($capabilities['administrator'])){
+       $authorized = $capabilities['administrator'];
+    }
+     
+    if(isset($capabilities['editor'])){
+       $authorized = $capabilities['editor'];
+    }
+    
+    if(!$authorized){
+        return new WP_REST_Response(json_encode(['msg'=>'You are not authorized']),403);
     }
     
         global $wpdb;
@@ -49,7 +66,6 @@ function update_member(WP_REST_Request $request)
         $table = $wpdb->prefix . 'members';
 
         $response = false;
-        $error = "";
         try{
            
             $response = $wpdb->update($table, [

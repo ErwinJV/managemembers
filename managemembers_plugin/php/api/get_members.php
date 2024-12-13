@@ -2,13 +2,59 @@
 
 
 function get_members(WP_REST_Request $request)
-{    
-    global $wpdb;
+{   
+    
+    if(!is_headers($request)){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Headers not defined']),400);
+    }
 
+    $cookie = get_cookie($request);
+
+    if(!$cookie){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Cookies not defined','cookie'=>$cookie]),400);
+    }
+
+    $token = get_token($cookie);
+
+    if(!$token){
+        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Token not defined','token'=>$token]),400);
+    }
+
+    $decode_token = decode_token($token);
+
+    if(isset($decode_token['error'])){
+        return new WP_REST_Response(json_encode($decode_token),403);  
+    }
+    $error = "";
+    $capabilities = [];
+    
+    try{
+     
+     $capabilities = $decode_token['data']['capabilities'];
+  
+    }catch(Exception $e){
+       $error = $e->getMessage();
+    }
+
+    $authorized = false;
+     
+    if(isset($capabilities['administrator'])){
+       $authorized = $capabilities['administrator'];
+    }
+     
+    if(isset($capabilities['editor'])){
+       $authorized = $capabilities['editor'];
+    }
+    
+    if(!$authorized){
+        return new WP_REST_Response(json_encode(['msg'=>'You are not authorized']),403);
+    }
+
+    global $wpdb;
 
     $members = [];
     $pages = 0;
-    $error = "";
+
     try{
     $query_count = "SELECT COUNT(*) FROM {$wpdb->prefix}members;";
     $members_count = $wpdb->get_results($query_count,ARRAY_A);
@@ -28,7 +74,7 @@ function get_members(WP_REST_Request $request)
 
     }
     
-    return new WP_REST_Response(json_encode(['pages'=>$pages,'members'=>$members,'offset'=>$_GET['offset']],),200);
+    return new WP_REST_Response(json_encode(['pages'=>$pages,'members'=>$members,'offset'=>$_GET['offset'],'capabilities'=>$capabilities['administrator']],),200);
  
   
 }
