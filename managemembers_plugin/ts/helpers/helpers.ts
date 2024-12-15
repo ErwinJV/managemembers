@@ -1,6 +1,10 @@
+import Toastify from "toastify-js";
+
 import { AlpineComponent } from "alpinejs";
 
-import { ManageMember, Members } from "../types";
+import "toastify-js/src/toastify.css";
+
+import { ManageMember, Members, RequestError } from "../types";
 
 const DOMAIN = window.location.origin;
 
@@ -20,34 +24,34 @@ export function toggleAddModal(this: AlpineComponent<ManageMember>) {
   console.log(this.openAddModal);
 }
 
-const resetInputs = (suffix:string)=>{
-  const nameInput = (document.getElementById(
-    `name${suffix}`
-  ) as HTMLInputElement).value = "";
-  const lastNameInput = (document.getElementById(
-    `lastName${suffix}`
-  ) as HTMLInputElement).value = "";
-  const emailInput = (document.getElementById(
-    `email${suffix}`
-  ) as HTMLInputElement).value = "";
-  const documentInput = (document.getElementById(
-    `document${suffix}`
-  ) as HTMLInputElement).value = "";
-  const memberStatusInput = (document.getElementById(
-    `memberStatus${suffix}`
-  ) as HTMLInputElement).value = "";
-}
+const resetInputs = (suffix: string) => {
+  const nameInput = ((
+    document.getElementById(`name${suffix}`) as HTMLInputElement
+  ).value = "");
+  const lastNameInput = ((
+    document.getElementById(`lastName${suffix}`) as HTMLInputElement
+  ).value = "");
+  const emailInput = ((
+    document.getElementById(`email${suffix}`) as HTMLInputElement
+  ).value = "");
+  const documentInput = ((
+    document.getElementById(`document${suffix}`) as HTMLInputElement
+  ).value = "");
+  const memberStatusInput = ((
+    document.getElementById(`memberStatus${suffix}`) as HTMLInputElement
+  ).value = "");
+};
 
 export const fillUpdateModalInputs = (
   suffix: string,
-  id:string,
+  id: string,
   name: string,
   lastName: string,
   email: string,
   _document: string,
   memberStatus: string
 ) => {
-  const sendButton = document.getElementById('sendButton') as HTMLDivElement
+  const sendButton = document.getElementById("sendButton") as HTMLDivElement;
 
   const nameInput = document.getElementById(
     `name${suffix}`
@@ -69,7 +73,7 @@ export const fillUpdateModalInputs = (
   emailInput.value = email;
   documentInput.value = _document;
   memberStatusInput.value = memberStatus;
-  sendButton.innerHTML = `<button type="submit" @click="updateMember('${id}')"  >Send</button>`
+  sendButton.innerHTML = `<button type="submit" @click="updateMember('${id}')"  >Send</button>`;
 };
 
 const getInputsValues = (suffix: string) => {
@@ -112,37 +116,73 @@ const validateValues = (values: Record<string, string>) => {
   return true;
 };
 
-export async function addNewMember  (this:AlpineComponent<ManageMember>) {
+export async function addNewMember(this: AlpineComponent<ManageMember>) {
   const { _document, email, lastName, memberStatus, name } =
     getInputsValues("_add");
 
   console.log(window.location.href);
   if (!validateValues({ name, _document, email, lastName, memberStatus })) {
-    return
+    return;
   }
-    const newMember = {
-      name,
-      lastName,
-      email,
-      document: _document,
-      memberStatus,
-    };
+  const newMember = {
+    name,
+    lastName,
+    email,
+    document: _document,
+    memberStatus,
+  };
 
-    await fetch(`${DOMAIN}/wp-json/members/v1/add`, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newMember),
-      method: "POST",
-    }).then(async()=>{
-      await this.getMembers()
-       resetInputs('_add')
-      this.toggleAddModal()
-    })  
-};
+  await fetch(`${DOMAIN}/wp-json/members/v1/add`, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newMember),
+    method: "POST",
+  })
+    .then(async (response) => {
+      const json = await response.json();
+      if (response.status >= 400) {
+        const error = JSON.parse(json) as unknown as RequestError;
+        Toastify({
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          text: error.msg,
+          style: {
+            background: "darkred",
+            color: "white",
+            fontWeight: "bold",
+          },
+        }).showToast();
 
-export async  function updateMember  (this:AlpineComponent<ManageMember>,id: string) {
+        return;
+      }
+      await this.getMembers();
+      resetInputs("_add");
+      this.toggleAddModal();
+    })
+    .catch((error) => {
+      if (error instanceof Error) {
+        Toastify({
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          text: error.message,
+          style: {
+            background: "darkred",
+            color: "white",
+            fontWeight: "bold",
+          },
+        }).showToast();
+      }
+    });
+}
+
+export async function updateMember(
+  this: AlpineComponent<ManageMember>,
+  id: string
+) {
   const { _document, email, lastName, memberStatus, name } =
     getInputsValues("_update");
 
@@ -154,49 +194,94 @@ export async  function updateMember  (this:AlpineComponent<ManageMember>,id: str
     memberStatus,
   });
   if (!inputsIsValid) {
-    return
+    return;
   }
-    const data = {
-      id,
-      name,
-      lastName,
-      email,
-      document: _document,
-      memberStatus,
-    };
-   // console.log(data)
-    await fetch(`${DOMAIN}/wp-json/members/v1/update`, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      method: "POST",
-    }).then(async()=>{
-      await this.getMembers()
-      resetInputs('_update')
-      this.toggleUpdateModal()
+  const data = {
+    id,
+    name,
+    lastName,
+    email,
+    document: _document,
+    memberStatus,
+  };
+  // console.log(data)
+  await fetch(`${DOMAIN}/wp-json/members/v1/update`, {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+    method: "POST",
+  })
+    .then(async (response) => {
+      const json = await response.json();
+      if (response.status >= 400) {
+        const error = JSON.parse(json) as unknown as RequestError;
+        Toastify({
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          text: error.msg,
+          style: {
+            background: "darkred",
+            color: "white",
+            fontWeight: "bold",
+          },
+        }).showToast();
+        return;
+      }
+      await this.getMembers();
+      resetInputs("_update");
+      this.toggleUpdateModal();
     })
-  
-};
+    .catch((error) => {
+      if (error instanceof Error) {
+        Toastify({
+          duration: 3000,
+          gravity: "top",
+          position: "center",
+          text: error.message,
+          style: {
+            background: "darkred",
+            color: "white",
+            fontWeight: "bold",
+          },
+        }).showToast();
+      }
+    });
+}
 
-export async function getMembers(this:AlpineComponent<ManageMember>) {
-  console.log('offset: ',this.offset, 'limit: ',this.limit,'currentPage: ',this.currentPage,'pages: ',this.pages)
+export async function getMembers(this: AlpineComponent<ManageMember>) {
  
   const response = await fetch(
     `${DOMAIN}/wp-json/members/v1/all?limit=${this.limit}&offset=${this.offset}`
   );
+
   const data = await response.json();
+  if (response.status >= 400) {
+    const error = JSON.parse(data) as unknown as RequestError;
+    Toastify({
+      duration: 3000,
+      gravity: "top",
+      position: "center",
+      text: error.msg,
+      style: {
+        background: "darkred",
+        color: "white",
+        fontWeight: "bold",
+      },
+    }).showToast();
+    return;
+  }
   let rows = "";
-  console.log(data)
+  console.log(data);
 
   const { members, pages } = JSON.parse(data) as unknown as Members;
- 
-  //console.log(data)
-  this.pages = pages
- 
+
+  this.pages = pages;
+
   members.forEach((member) => {
-    rows += ` <tr>
+  rows += ` <tr>
                 <td>${member.name}</td>
                 <td>${member.last_name}</td>
                 <td>${member.email}</td>
@@ -220,9 +305,8 @@ export async function getMembers(this:AlpineComponent<ManageMember>) {
 }
 
 export function nextPage(this: AlpineComponent<ManageMember>) {
-
-  if(this.currentPage === this.pages -1){
-    return
+  if (this.currentPage === this.pages - 1) {
+    return;
   }
   if (this.showPages[this.showPages.length - 1] !== this.pages) {
     this.showPages = this.showPages.map((value) => value + 1);
@@ -232,65 +316,66 @@ export function nextPage(this: AlpineComponent<ManageMember>) {
     return;
   }
   this.currentPage += 1;
-  this.offset +=10;
+  this.offset += 10;
 
   this.getMembers();
 }
 
 export function previousPage(this: AlpineComponent<ManageMember>) {
-  if(this.currentPage === 0){
-     return
+  if (this.currentPage === 0) {
+    return;
   }
   if (this.showPages[0] !== 1) {
     this.showPages = this.showPages.map((value) => value - 1);
   }
-  if(this.currentPage> 0){
+  if (this.currentPage > 0) {
     this.currentPage -= 1;
   }
-  if(this.offset !== 0){
-    this.offset -=10
+  if (this.offset !== 0) {
+    this.offset -= 10;
   }
- 
-
 
   this.getMembers();
 }
 
-export function goToPage(this:AlpineComponent<ManageMember>,page:string){
-      if(this.currentPage === parseInt(page) -1){
-        return
-      }
-      this.currentPage = parseInt(page) -1
-      if(this.currentPage === 0){
-         this.offset = 0
-      }else{
-       this.offset = this.currentPage * 10
-      }
-  
-      this.getMembers()
+export function goToPage(this: AlpineComponent<ManageMember>, page: string) {
+  if (this.currentPage === parseInt(page) - 1) {
+    return;
+  }
+  this.currentPage = parseInt(page) - 1;
+  if (this.currentPage === 0) {
+    this.offset = 0;
+  } else {
+    this.offset = this.currentPage * 10;
+  }
+
+  this.getMembers();
 }
 
-export function renderPagination(this:AlpineComponent<ManageMember>) {
-     const manageMembersPagination = document.getElementById('manageMembersPagination') as HTMLDivElement
+export function renderPagination(this: AlpineComponent<ManageMember>) {
+  const manageMembersPagination = document.getElementById(
+    "manageMembersPagination"
+  ) as HTMLDivElement;
 
-     if(this.pages <= 5){
-       new Array(this.pages).fill(0).forEach((_,i)=>{
-           this.showPages[i] = i+1
-       })
-     }else{
-      new Array(5).fill(0).forEach((_,i)=>{
-        this.showPages[i] = i+1
-    })
-     }
+  if (this.pages <= 5) {
+    new Array(this.pages).fill(0).forEach((_, i) => {
+      this.showPages[i] = i + 1;
+    });
+  } else {
+    new Array(5).fill(0).forEach((_, i) => {
+      this.showPages[i] = i + 1;
+    });
+  }
 
-     let paginate = `<span @click="previousPage" class="dashicons dashicons-arrow-left-alt2"></span>`
+  let paginate = `<span @click="previousPage" class="dashicons dashicons-arrow-left-alt2"></span>`;
 
-     this.showPages.forEach((page)=>{
-      paginate += `<span class="${page -1 === this.currentPage ? 'current-page' : '' }" @click="goToPage('${page}')">${page}</span>`
-     })
+  this.showPages.forEach((page) => {
+    paginate += `<span class="${
+      page - 1 === this.currentPage ? "current-page" : ""
+    }" @click="goToPage('${page}')">${page}</span>`;
+  });
 
-     paginate += `<span @click="nextPage()" class="dashicons dashicons-arrow-right-alt2"></span>` 
+  paginate += `<span @click="nextPage()" class="dashicons dashicons-arrow-right-alt2"></span>`;
 
-     manageMembersPagination.innerHTML = paginate
-
+  manageMembersPagination.innerHTML = paginate;
 }

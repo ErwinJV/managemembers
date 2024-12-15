@@ -4,7 +4,7 @@ function add_member(WP_REST_Request $request)
 {
 
     if (!is_headers($request)) {
-        return new WP_REST_Response(json_encode(['error' => 'Bad Request - Undefined headers']), 400);
+        return new WP_REST_Response(json_encode(['msg' => 'Bad Request - Undefined headers']), 400);
     }
 
     global $wpdb;
@@ -21,11 +21,11 @@ function add_member(WP_REST_Request $request)
 
         $query = "SELECT email FROM {$wpdb->prefix}members WHERE email = '{$email}';";
         if ($wpdb->query($query)) {
-            return new WP_REST_Response(json_encode(['error' => 'Email already exists']), 400);
+            return new WP_REST_Response(json_encode(['msg' => 'Email already exists']), 400);
         }
         $query = "SELECT document FROM {$wpdb->prefix}members WHERE document = {$document};";
         if ($wpdb->query($query)) {
-            return new WP_REST_Response(json_encode(['error' => 'Document already exists']), 400);
+            return new WP_REST_Response(json_encode(['msg' => 'Document already exists']), 400);
         }
 
         $table = $wpdb->prefix . 'members';
@@ -56,16 +56,16 @@ function add_member(WP_REST_Request $request)
         }
 
         if ($error) {
-            return new WP_REST_Response(json_encode(['error' => $error]), 500);
+            return new WP_REST_Response(json_encode(['msg' => $error]), 500);
         }
         if (!$response) {
-            return new WP_REST_Response(json_encode(['error' => 'Something wen wrong']), 404);
+            return new WP_REST_Response(json_encode(['msg' => 'Something wen wrong']), 404);
         }
 
         return new WP_REST_Response(json_encode(['msg' => 'Success']), 200);
     }
 
-    return new WP_REST_Response(json_encode(['error' => 'All fields are required']), 400);
+    return new WP_REST_Response(json_encode(['msg' => 'All fields are required']), 400);
 }
 
 function register_member_api_rest()

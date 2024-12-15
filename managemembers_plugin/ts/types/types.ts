@@ -47,3 +47,7 @@ export type Members = {
   members: Member[];
 };
 
+export type RequestError = {
+   msg:string
+}
+

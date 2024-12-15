@@ -1,13 +1,13 @@
 <?php
 
-use DomainException;
+// use DomainException;
 use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
-use InvalidArgumentException;
-use UnexpectedValueException;
+// use InvalidArgumentException;
+// use UnexpectedValueException;
 
 function is_headers(WP_REST_Request $request)
 {

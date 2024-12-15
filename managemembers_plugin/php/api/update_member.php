@@ -7,25 +7,25 @@ function update_member(WP_REST_Request $request)
 
    
     if(!is_headers($request)){
-        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Headers not defined']),400);
+        return new WP_REST_Response(json_encode(['msg'=>'Bad Request - Headers not defined']),400);
     }
 
     $cookie = get_cookie($request);
 
     if(!$cookie){
-        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Cookies not defined','cookie'=>get_cookie($request)]),400);
+        return new WP_REST_Response(json_encode(['msg'=>'Bad Request - Cookies not defined','cookie'=>get_cookie($request)]),400);
     }
 
     $token = get_token($cookie);
 
     if(!$token){
-        return new WP_REST_Response(json_encode(['error'=>'Bad Request - Token not defined','token'=>$token]),400);
+        return new WP_REST_Response(json_encode(['msg'=>'Bad Request - Token not defined','token'=>$token]),400);
     }
 
     $decode_token = decode_token($token);
 
     if(isset($decode_token['error'])){
-        return new WP_REST_Response(json_encode($decode_token),400);  
+        return new WP_REST_Response(json_encode(['msg'=>$decode_token['error']]),400);  
     }
     $error = "";
     $capabilities = [];
@@ -96,7 +96,7 @@ function update_member(WP_REST_Request $request)
  
        
         if($error){
-           return new WP_REST_Response(json_encode(['error'=>$error]), 500);
+           return new WP_REST_Response(json_encode(['msg'=>$error]), 500);
         }
 
         if(gettype($response) !=='integer'){
