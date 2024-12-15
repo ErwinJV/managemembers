@@ -1,3 +1,9 @@
+.table-paginate-wrapper{
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+
 .manage-members-container{
     height: 100%;
     position: relative;
@@ -20,19 +26,24 @@
     border: 1px solid black;
     margin-left: auto;
     margin-right: auto;
-    width:95%;
+    min-width: 952px;
 }
+
+.manage-members-table tbody tr:nth-child(even){
+    background-color: gainsboro;
+}
+
 .manage-members-table thead tr th{
     font-weight: bold;
 }
 
 .manage-members-table thead tr th,
 .manage-members-table tbody tr td {
-    background-color: gainsboro;
     padding: 10px;
 }
 
 .manage-members-table .manage-members-actions{
+  align-items: center;
   display: flex;
   justify-content: space-evenly;
 }

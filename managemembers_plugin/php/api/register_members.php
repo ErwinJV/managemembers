@@ -1,40 +1,71 @@
 <?php
- 
 
 function add_member(WP_REST_Request $request)
 {
-    global $wpdb;
 
-    require __DIR__ . '/validate_request.php';
-   
-
-    try
-    {
-
-        $params = $request->get_json_params();
-
-        $name = sanitize_text_field($params['name']);
-        $last_name = sanitize_text_field($params['lastName']);
-        $email = sanitize_email($params['email']);
-        $document = intval($params['document']);
-
-        $created = date('Y-m-d H:i:s');
-
-        if ($name && $last_name && $email && $document) {
-            $query = "INSERT INTO {$wpdb->prefix}members VALUES ( %s, %s, %s, 'trial', %s );";
-            $response = $wpdb->query($wpdb->prepare($query, [$name, $last_name, $email, $document, $created]));
-
-            if (!$response) {
-                return new WP_REST_Response('Something went wrong', 404);
-            }
-
-            return new WP_REST_Response('SUCCESS', 200);
-        }
-
-    } catch (Exception $e) {
-        return new WP_REST_Response($e->getMessage(), 500);
+    if (!is_headers($request)) {
+        return new WP_REST_Response(json_encode(['msg' => 'Bad Request - Undefined headers']), 400);
     }
 
+    global $wpdb;
+
+    $params = $request->get_json_params();
+    $name = sanitize_text_field($params['name']);
+    $last_name = sanitize_text_field($params['lastName']);
+    $email = sanitize_email($params['email']);
+    $document = intval($params['document']);
+    $member_status = sanitize_text_field($params['memberStatus']) ?? 'trial';
+    $created = date('Y-m-d H:i:s');
+
+    if ($name && $last_name && $email && $document) {
+
+        $query = "SELECT email FROM {$wpdb->prefix}members WHERE email = '{$email}';";
+        if ($wpdb->query($query)) {
+            return new WP_REST_Response(json_encode(['msg' => 'Email already exists']), 400);
+        }
+        $query = "SELECT document FROM {$wpdb->prefix}members WHERE document = {$document};";
+        if ($wpdb->query($query)) {
+            return new WP_REST_Response(json_encode(['msg' => 'Document already exists']), 400);
+        }
+
+        $table = $wpdb->prefix . 'members';
+
+        $response = false;
+        $error = "";
+        try {
+
+            $response = $wpdb->insert($table,
+                [
+                    'name' => $name,
+                    'last_name' => $last_name,
+                    'email' => $email,
+                    'document' => $document,
+                    'member_status' => $member_status,
+                    'created' => $created],
+                [
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%d',
+                    '%s',
+                    '%s',
+                ]);
+
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
+
+        if ($error) {
+            return new WP_REST_Response(json_encode(['msg' => $error]), 500);
+        }
+        if (!$response) {
+            return new WP_REST_Response(json_encode(['msg' => 'Something wen wrong']), 404);
+        }
+
+        return new WP_REST_Response(json_encode(['msg' => 'Success']), 200);
+    }
+
+    return new WP_REST_Response(json_encode(['msg' => 'All fields are required']), 400);
 }
 
 function register_member_api_rest()

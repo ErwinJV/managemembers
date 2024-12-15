@@ -1,0 +1,26 @@
+#manageMembersPagination{
+     display: flex;
+     flex-direction: row;
+     justify-content: center; 
+     width: 100%;
+     padding: 10px;
+}
+
+#manageMembersPagination span{
+    padding: 8px;
+    background-color: darkblue;
+    color:white;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+#manageMembersPagination span:last-child{
+    
+    margin-left: none;
+}
+
+#manageMembersPagination .current-page{
+    background-color: white;
+    outline: 1px darkblue;
+    color:darkblue;
+}

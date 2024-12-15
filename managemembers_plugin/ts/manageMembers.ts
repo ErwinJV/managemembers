@@ -1,18 +1,49 @@
-import Alpine, { AlpineComponent } from "alpinejs"
+import Alpine, { AlpineComponent } from "alpinejs";
 
-import {ManageMember} from './types'
-import {deleteMember,fillUpdateModalInputs,toggleAddModal,toggleUpdateModal} from './helpers'
+import { ManageMember } from "./types";
+import {
+  deleteMember,
+  fillUpdateModalInputs,
+  toggleAddModal,
+  toggleUpdateModal,
+  addNewMember,
+  updateMember,
+  getMembers,
+  renderPagination,
+  nextPage,
+  previousPage,
+  goToPage,
+} from "./helpers";
 
 //@ts-ignore
-window.Alpine = Alpine
+window.Alpine = Alpine;
 
-Alpine.data('manageMembers',():AlpineComponent<ManageMember>=>({
+Alpine.data(
+  "manageMembers",
+  (): AlpineComponent<ManageMember> => ({
+    addNewMember,
+    currentPage:0,
     deleteMember,
     fillUpdateModalInputs,
-    openAddModal:false,
-    openUpdateModal:false,
+    limit:10,
+    offset:0,
+    openAddModal: false,
+    openUpdateModal: false,
+    pages:1,
+    showPages:[],
     toggleAddModal,
     toggleUpdateModal,
-}))
+    updateMember,
+    getMembers,
+    renderPagination,
+    nextPage,
+    previousPage,
+    goToPage
+    })
+);
 
-Alpine.start()
+Alpine.start();
+
+
+
+
